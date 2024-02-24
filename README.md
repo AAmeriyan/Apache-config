@@ -9,28 +9,22 @@ This readme provides a quick guide on configuring Virtual Hosts in the Apache HT
 A basic Virtual Host configuration looks like this:
 
 ```apache
-<VirtualHost *:80>
-    DocumentRoot "/var/www/html/example"
-    ServerName example.com
-    ErrorLog "/var/log/httpd/example_error.log"
-    CustomLog "/var/log/httpd/example_access.log" common
-</VirtualHost>
-```
-```apache
 <VirtualHost sub.domain.com:80>
      ServerAdmin info@mail.com
     ServerName sub.domain.com
     Redirect permanent / https://sub.domain.com/
 </VirtualHost>
-
+```
+```apache
 <VirtualHost sub.domain.com:443>
     ServerAdmin info@mail.com
     ServerName sub.domain.com
-
+    #SSL configuration
     SSLEngine On
     SSLCertificateFile /path/to/ssl/certificate.crt
     SSLCertificateKeyFile /path/to/ssl/key.key
     SSLCertificateChainFile  /path/to/ssl/bundle.crt
+    #Load Balancing for several localhost Node.js server  
     <Proxy "balancer://mycluster">
         BalancerMember http://localhost:4000/
         BalancerMember http://localhost:4001/
@@ -45,7 +39,7 @@ A basic Virtual Host configuration looks like this:
         BalancerMember http://localhost:4010/
         ProxySet lbmethod=byrequests
     </Proxy>
-
+    # ignore some routes to revsere proxy especialy when using wordpress beside node.js
     ProxyPreserveHost On
     <Location "/blog/*">
         ProxyPass "!"
@@ -55,11 +49,11 @@ A basic Virtual Host configuration looks like this:
         Allow from all
     </Proxy>
 
-
+      #reserve proxy
     ProxyPass / balancer://mycluster/
     ProxyPassReverse / balancer://mycluster/
 </VirtualHost>
-
+#another sub.domain reverse proxy but simple not with cluster load balancer
 <VirtualHost sub2.domain.com:443>
     ServerAdmin info@mail.com
     ServerName sub2.domain.com
